@@ -34,10 +34,14 @@ install_extra_packages() {
 
   cat /etc/pkg/FreeBSD.conf
 
-  sed '/${ABI}\//s/quaterly/latest/' /etc/pkg/FreeBSD.conf > /etc/pkg/FreeBSD.conf
+  mv /etc/pkg/FreeBSD.conf /etc/pkg/FreeBSD_temp.conf
+  sed '/${ABI}\//s/quarterly/latest/' /etc/pkg/FreeBSD_temp.conf > /etc/pkg/FreeBSD.conf
+
+  echo -n "quarterly -> latest"
 
   cat /etc/pkg/FreeBSD.conf
 
+  sleep 1
   pkg update -f
   pkg upgrade 
 
