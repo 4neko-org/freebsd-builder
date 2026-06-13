@@ -112,11 +112,11 @@ variable "readonly_boot_media" {
 }
 
 locals {
-  iso_target_extension = "img"
+  iso_target_extension = "iso"
   iso_target_path = "packer_cache"
   image_full_remote_path = "${var.os_version}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
   vm_name = "freebsd-${var.os_version}-${var.architecture}.qcow2"
-  iso_full_target_path = "${local.iso_target_path}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
+  iso_full_target_path = "${local.iso_target_path}/${sha1(local.checksum)}.${local.iso_target_extension}"
   readonly_boot_media = var.readonly_boot_media ? "on" : "off"
 }
 
