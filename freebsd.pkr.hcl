@@ -114,6 +114,7 @@ variable "readonly_boot_media" {
 locals {
   vm_name = "freebsd-${var.os_version}-${var.architecture}.qcow2"
   iso_full_target_path = "ISO-IMAGES/${var.os_version}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
+  readonly_boot_media = var.readonly_boot_media ? "on" : "off"
 }
 
 source "qemu" "qemu" {
