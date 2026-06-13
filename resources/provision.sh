@@ -32,7 +32,11 @@ configure_sendmail() {
 install_extra_packages() {
   pkg bootstrap
 
+  cat /etc/pkg/FreeBSD.conf
+
   sed '/${ABI}\//s/quaterly/latest/' /etc/pkg/FreeBSD.conf > /etc/pkg/FreeBSD.conf
+
+  cat /etc/pkg/FreeBSD.conf
 
   pkg update -f
   pkg upgrade 
