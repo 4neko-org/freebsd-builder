@@ -67,7 +67,7 @@ variable "root_password" {
   description = "The password for the root user"
 }
 
-variable "secondary_user_username" {
+variable "SECONDARY_USER" {
   default = "vagrant"
   type = string
   description = "The name for the secondary user"
@@ -102,14 +102,14 @@ variable "firmware" {
 
 locals {
   vm_name = "freebsd-${var.os_version}-${var.architecture}.qcow2"
-  iso_path = "ISO-IMAGES/${var.os_version}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
+  iso_full_target_path = "ISO-IMAGES/${var.os_version}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
 }
 
 source "qemu" "qemu" {
   machine_type = "${var.machine_type}"
   cpus = var.cpus
   memory = var.memory
-  net_device = "virtio-net"
+  net_device = var.net_device
 
   disk_compression = true
   disk_interface = "virtio"
@@ -123,7 +123,7 @@ source "qemu" "qemu" {
   qemu_binary = "qemu-system-${var.qemu_architecture}"
   firmware = var.firmware
 
-  boot_wait = "6s"
+  boot_wait = "7s"
 
   boot_command = [
     "2<wait30s>",
@@ -145,18 +145,24 @@ source "qemu" "qemu" {
     ["-monitor", "none"],
     ["-accel", "hvf"],
     ["-accel", "kvm"],
-    ["-accel", "tcg"]
+    ["-accel", "tcg"],
+    ["-monitor", "none"],
+    ["-vga", "cirrus"],
+    ["-device", "virtio-blk-pci,drive=drive0,bootindex=0"],
+    ["-device", "virtio-blk-pci,drive=drive1,bootindex=1"],
+    ["-drive", "if=none,file={{ .OutputDir }}/{{ .Name }},id=drive0,cache=writeback,discard=ignore,format=qcow2"],
+    ["-drive", "if=none,file=${local.iso_full_target_path},id=drive1,media=disk,format=raw,readonly=${local.readonly_boot_media}"],
   ]
 
   iso_checksum = var.checksum
   iso_urls = [
-    "https://ftp.freebsd.org/pub/FreeBSD/releases/${local.iso_path}",
-    "https://archive.freebsd.org/old-releases/${local.iso_path}",
-    "http://ftp4.se.freebsd.org/pub/FreeBSD/releases/${local.iso_path}",
-    "http://ftp2.de.freebsd.org/pub/FreeBSD/releases/${local.iso_path}",
-    "https://ftp.lv.freebsd.org/pub/FreeBSD/releases/${local.iso_path}",
-    "http://ftp4.us.freebsd.org/pub/FreeBSD/releases/${local.iso_path}",
-    "http://ftp.at.freebsd.org/pub/FreeBSD/releases/${local.iso_path}"
+    "https://ftp.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
+    "https://archive.freebsd.org/old-releases/${local.iso_full_target_path}",
+    "http://ftp4.se.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
+    "http://ftp2.de.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
+    "https://ftp.lv.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
+    "http://ftp4.us.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
+    "http://ftp.at.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}"
   ]
 
   http_directory = "."
@@ -168,7 +174,7 @@ source "qemu" "qemu" {
 packer {
   required_plugins {
     qemu = {
-      version = "~> 1.1.3"
+      version = ">= 1.1.4"
       source = "github.com/hashicorp/qemu"
     }
   }
@@ -181,7 +187,7 @@ build {
     script = "resources/provision.sh"
     execute_command = "chmod +x {{ .Path }}; env {{ .Vars }} {{ .Path }}"
     environment_vars = [
-      "SECONDARY_USER_USERNAME=${var.secondary_user_username}",
+      "SECONDARY_USER=${var.SECONDARY_USER}",
       "OS_VERSION=${var.os_version}",
       "PKG_SITE_ARCHITECTURE=${var.pkg_site_architecture}"
     ]
@@ -191,7 +197,7 @@ build {
     script = "resources/custom.sh"
     execute_command = "chmod +x {{ .Path }}; env {{ .Vars }} {{ .Path }}"
     environment_vars = [
-      "SECONDARY_USER_USERNAME=${var.secondary_user_username}"
+      "SECONDARY_USER=${var.SECONDARY_USER}"
     ]
   }
 

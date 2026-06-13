@@ -2,17 +2,17 @@
 
 # Environment variables:
 # OS_VERSION: the version of FreeBSD
-# SECONDARY_USER_USERNAME: the username of the secondary user to create
+# SECONDARY_USER: the username of the secondary user to create
 # PKG_SITE_ARCHITECTURE: the name of the architecture used by the pkg site: http://pkg.freebsd.org
 
 set -exu
 
-ABI_VERSION="$(echo $OS_VERSION | cut -d . -f 1)"
-PACKAGE_SITE="https://pkg.FreeBSD.org/FreeBSD:$ABI_VERSION:$PKG_SITE_ARCHITECTURE/quarterly/Latest"
-IGNORE_OSVERSION=yes
+#ABI_VERSION="$(echo $OS_VERSION | cut -d . -f 1)"
+#PACKAGE_SITE="https://pkg.FreeBSD.org/FreeBSD:$ABI_VERSION:$PKG_SITE_ARCHITECTURE/quarterly/Latest"
+#IGNORE_OSVERSION=yes
 ASSUME_ALWAYS_YES=yes
 
-export IGNORE_OSVERSION
+#export IGNORE_OSVERSION
 export ASSUME_ALWAYS_YES
 
 configure_boot_flags() {
@@ -29,89 +29,140 @@ configure_sendmail() {
   sysrc sendmail_msp_queue_enable=NO
 }
 
-upstream_pkg_site_available() {
-  if [ "$OS_VERSION" = "13.0" ]; then
-    if upstream_package_available "pkg.txz"; then
-      return 0
-    elif upstream_package_available "pkg.pkg"; then
-      bootstrap_pkg_remote
-      return 0
-    else
-      return 1
-    fi
-  fi
-
-  upstream_package_available "pkg.pkg" || upstream_package_available "pkg.txz"
-}
-
-upstream_package_available() {
-  local package_name="$1"
-
-  fetch \
-    --print-size \
-    "$PACKAGE_SITE/$package_name" \
-    "$PACKAGE_SITE/$package_name.sig" \
-    > /dev/null 2>&1
-}
-
-bootstrap_pkg_remote() {
-  pushd /tmp > /dev/null
-  fetch "$PACKAGE_SITE/pkg.pkg" "$PACKAGE_SITE/pkg.pkg.sig"
-  pkg add pkg.pkg
-  rm -f pkg.pkg pkg.pkg.sig
-  popd > /dev/null
-}
-
-bootstrap_pkg_install_media() {
-  local device_version="$(echo "$OS_VERSION" | sed 's/\./_/')"
-  local device_arch="$(echo "$PKG_SITE_ARCHITECTURE" | tr '[:lower:]' '[:upper:]')"
-
-  if [ -e /dev/cd0 ]; then
-    local device_path=/dev/cd0
-  elif [ -e "/dev/iso9660/${device_version}_RELEASE_${device_arch}_DVD" ]; then
-    local device_path="/dev/iso9660/${device_version}_RELEASE_${device_arch}_DVD"
-  else
-    echo "ERROR: There is no DVD/CDROM device available to mount" >&2
-    exit 1
-  fi
-
-  sed -i '' 's/signature_type: "fingerprints"/signature_type: "none"/' /etc/pkg/FreeBSD.conf
-  mount -t cd9660 "$device_path" /mnt
-  export PACKAGESITE="file:///mnt/packages/FreeBSD:$ABI_VERSION:$PKG_SITE_ARCHITECTURE"
-  pkg bootstrap
-}
-
-install_local_package() {
-  pkg add "/mnt/packages/FreeBSD:$ABI_VERSION:$PKG_SITE_ARCHITECTURE/All/$1"-[0123456789]*
-}
-
 install_extra_packages() {
-  if upstream_pkg_site_available; then
-    pkg install sudo bash curl rsync
-  else
-    bootstrap_pkg_install_media
-    install_local_package sudo
-    install_local_package bash
-    install_local_package curl
-    install_local_package rsync
-  fi
+  pkg bootstrap
+
+  sed '/${ABI}\//s/quaterly/latest/' /etc/pkg/FreeBSD.conf > /etc/pkg/FreeBSD.conf
+
+  pkg update -f
+  pkg upgrade 
+
+  pkg install sudo bash curl rsync openssl git
 }
 
 configure_sudo() {
   mkdir -p /usr/local/etc/sudoers.d
-  cat <<EOF > "/usr/local/etc/sudoers.d/$SECONDARY_USER_USERNAME"
-Defaults:$SECONDARY_USER_USERNAME !requiretty
-$SECONDARY_USER_USERNAME ALL=(ALL) NOPASSWD: ALL
+  cat <<EOF > "/usr/local/etc/sudoers.d/$SECONDARY_USER"
+Defaults:$SECONDARY_USER !requiretty
+$SECONDARY_USER ALL=(ALL) NOPASSWD: ALL
 EOF
-  chmod 440 "/usr/local/etc/sudoers.d/$SECONDARY_USER_USERNAME"
+  chmod 440 "/usr/local/etc/sudoers.d/$SECONDARY_USER"
 }
 
 setup_secondary_user() {
-  pw useradd "$SECONDARY_USER_USERNAME" -m -s "$SHELL" -w none
+  pw useradd "$SECONDARY_USER" -m -s "$SHELL" -w none
 }
 
-setup_secondary_user
+setup_rust_rustup(){
+  su $SECONDARY_USER -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y" -
+  
+  su $SECONDARY_USER -c "PATH=\"\$HOME/.cargo/bin:\$PATH\" rustup toolchain install nightly"
+  su $SECONDARY_USER -c "PATH=\"\$HOME/.cargo/bin:\$PATH\" rustup toolchain install beta"
+}
+
+configure_boot_scripts() {
+  cat <<EOF >> /etc/rc.conf
+RESOURCES_MOUNT_PATH='/mnt/resources'
+
+mount_resources_disk() {
+  # get the last disk
+  disk="/dev/\$(sysctl -n kern.disks | grep -o 'vtbd1')"
+
+  if [ -n "\$disk" ]; then
+    mkdir -p "\$RESOURCES_MOUNT_PATH"
+    mount_msdosfs "\$disk" "\$RESOURCES_MOUNT_PATH"
+  fi
+}
+
+install_authorized_keys() {
+  echo "install_authorized_keys"
+  if [ -s "\$RESOURCES_MOUNT_PATH/KEYS" ]; then
+    echo "disk exists install_authorized_keys"
+    mkdir -p "/home/$SECONDARY_USER/.ssh"
+    cp "\$RESOURCES_MOUNT_PATH/KEYS" "/home/$SECONDARY_USER/.ssh/authorized_keys"
+    chown "$SECONDARY_USER" "/home/$SECONDARY_USER/.ssh/authorized_keys"
+    chmod 600 "/home/$SECONDARY_USER/.ssh/authorized_keys"
+  fi
+}
+
+mount_freya_disk() {
+  disk="/dev/\$(sysctl -n kern.disks | grep -o 'vtbd2')"
+
+  if [ -n "\$disk" ]; then
+    newfs -U -L storage "\${disk}"
+    mount "\${disk}a" "/home/$SECONDARY_USER/storage"
+    chown "$SECONDARY_USER:$SECONDARY_USER" "/home/$SECONDARY_USER/storage"
+  fi
+}
+
+mount_resources_disk
+install_authorized_keys
+mount_freya_disk
+EOF
+}
+
+setup_freya_home_directory() {
+  local work_directory="/home/$SECONDARY_USER"
+  local permissions="$SECONDARY_USER:$SECONDARY_USER"
+
+  mkdir "$work_directory/storage"
+  chown "$permissions" "$work_directory/storage"
+
+  mkdir "$work_directory/.ssh"
+  chown "$permissions" "$work_directory/.ssh"
+
+  cat <<EOF >> $work_directory/env.toml
+# if system supports RUSTUP, then a path to the rustup binary dir
+# should be set. It uses the same path to access cargo and switch 
+# between channels.
+[[envs]]
+key = "FREYA_RUSTUP_DIR_PATH"
+value = "\${HOMEDIR}/.cargo/bin"
+
+[[envs]]
+key = "PATH"
+value = "\${HOMEDIR}/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+
+# a default toolchain name. A value is a full toolchain name
+# channel-arch-hw-os-abi
+[[envs]]
+key = "FREYA_DEFAULT_TOOLCHAIN"
+value = "stable-x86_64-unknown-freebsd"
+EOF
+
+  chown "$permissions" "$work_directory/env.toml"
+}
+
+setup_freyashell() {
+  su $SECONDARY_USER -c "
+
+  PATH=\"\$HOME/.cargo/bin:\$PATH\"
+  
+  cd /home/$SECONDARY_USER
+  git clone --branch v0.1.0 https://codeberg.org/4neko/freyashell.git
+  cd ./freyashell
+  cargo build --release
+  "
+
+  mkdir -p /usr/local/bin
+  cp /home/$SECONDARY_USER/freyashell/target/release/freyashell /usr/local/bin/freyashell
+
+  rm -rf /home/$SECONDARY_USER/freyashell
+
+  # set the shell
+  echo "/usr/local/bin/freyashell" >> /etc/shells
+
+  # set freya user to work with freyashell
+  chsh -s /usr/local/bin/freyashell $SECONDARY_USER
+}
+
+
 configure_boot_flags
 configure_sendmail
 install_extra_packages
+setup_secondary_user
 configure_sudo
+setup_rust_rustup
+configure_boot_scripts
+setup_freya_home_directory
+setup_freyashell

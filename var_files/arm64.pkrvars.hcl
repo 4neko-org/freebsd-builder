@@ -6,3 +6,4 @@ machine_type = "virt,highmem=off" // highmem=off if reqiured for enabling hardwa
 cpu_type = "cortex-a57"
 firmware = "edk2-aarch64-code.fd"
 memory = 3072 // max memory when hardware acceleration on Apple Silicon is enabled
+net_device = "virtio-net" 
