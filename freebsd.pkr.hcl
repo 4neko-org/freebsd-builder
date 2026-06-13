@@ -112,8 +112,11 @@ variable "readonly_boot_media" {
 }
 
 locals {
+  iso_target_extension = "img"
+  iso_target_path = "packer_cache"
+  image_full_remote_path = "${var.os_version}/FreeBSD-${var.os_version}-RELEASE-${var.architecture}-dvd1.iso"
   vm_name = "freebsd-${var.os_version}-${var.architecture}.qcow2"
-  iso_full_target_path = "ISO-IMAGES/${var.os_version}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
+  iso_full_target_path = "${local.iso_target_path}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
   readonly_boot_media = var.readonly_boot_media ? "on" : "off"
 }
 
@@ -167,14 +170,16 @@ source "qemu" "qemu" {
   ]
 
   iso_checksum = var.checksum
+  iso_target_extension = local.iso_target_extension
+  iso_target_path = local.iso_target_path
   iso_urls = [
-    "https://ftp.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
-    "https://archive.freebsd.org/old-releases/${local.iso_full_target_path}",
-    "http://ftp4.se.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
-    "http://ftp2.de.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
-    "https://ftp.lv.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
-    "http://ftp4.us.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}",
-    "http://ftp.at.freebsd.org/pub/FreeBSD/releases/${local.iso_full_target_path}"
+    "https://ftp.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${local.image_full_remote_path}",
+    "https://archive.freebsd.org/old-releases/ISO-IMAGES/${local.image_full_remote_path}",
+    "http://ftp4.se.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${local.image_full_remote_path}",
+    "http://ftp2.de.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${local.image_full_remote_path}",
+    "https://ftp.lv.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${local.image_full_remote_path}",
+    "http://ftp4.us.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${local.image_full_remote_path}",
+    "http://ftp.at.freebsd.org/pub/FreeBSD/releases/ISO-IMAGES/${local.image_full_remote_path}"
   ]
 
   http_directory = "."
