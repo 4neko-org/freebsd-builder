@@ -114,6 +114,10 @@ variable "readonly_boot_media" {
 locals {
   iso_target_extension = "iso"
   iso_target_path = "packer_cache"
+  
+  has_checksum_prefix = substr(var.checksum, 0, 7) == "sha256:"
+  checksum = local.has_checksum_prefix ? var.checksum : "sha256:${var.checksum}"
+
   image_full_remote_path = "${var.os_version}/FreeBSD-${var.os_version}-RELEASE-${var.image_architecture}-dvd1.iso"
   vm_name = "freebsd-${var.os_version}-${var.architecture}.qcow2"
   iso_full_target_path = "${local.iso_target_path}/${sha1(local.checksum)}.${local.iso_target_extension}"
