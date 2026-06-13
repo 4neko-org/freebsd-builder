@@ -56,6 +56,12 @@ variable "disk_size" {
   description = "The size in bytes of the hard disk of the VM"
 }
 
+variable "net_device" {
+  default = "virtio-net"
+  type = string
+  description = "The driver to use for the network interface"
+}
+
 variable "checksum" {
   type = string
   description = "The checksum for the virtual hard drive file"
@@ -98,6 +104,11 @@ variable "accelerator" {
 variable "firmware" {
   type = string
   description = "The firmware file to be used by QEMU"
+}
+
+variable "readonly_boot_media" {
+  default = true
+  description = "If true, the boot media will be mounted as readonly"
 }
 
 locals {
