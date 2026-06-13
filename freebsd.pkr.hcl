@@ -145,8 +145,8 @@ source "qemu" "qemu" {
   boot_wait = "7s"
 
   boot_command = [
-    "2<wait30s>",
-    "<enter><wait10>",
+    "1<wait35s>",
+    "s<wait10>",
     "mdmfs -s 100m md1 /tmp<enter><wait>",
     "dhclient -l /tmp/dhclient.leases -p /tmp/dhclient.pid vtnet0<enter><wait5>",
     "fetch -o /tmp/installerconfig http://{{.HTTPIP}}:{{.HTTPPort}}/resources/installerconfig<enter><wait>",
