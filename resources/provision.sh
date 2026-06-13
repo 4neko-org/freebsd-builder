@@ -164,6 +164,24 @@ setup_freyashell() {
   chsh -s /usr/local/bin/freyashell $SECONDARY_USER
 }
 
+configure_tmpfs(){
+  echo "varmfs=YES" >> /etc/rc.conf
+  echo "varsize=400m" >> /etc/rc.conf
+  echo "tmpfs=YES" >> /etc/rc.conf
+  echo "tmpsize=256m" >> /etc/rc.conf
+}
+
+configure_fstab() {
+  cp /etc/fstab /tmp/fstab
+  sed '/\t\/\tufs\t/s/rw/ro/' /tmp/fstab > /etc/fstab
+  echo "tmpfs /home/$SECONDARY_USER/.ssh tmpfs rw,-m1777,-sram%5" >> /etc/fstab
+
+  mkdir -p "/mnt/resources"
+}
+
+hardening_sysctl(){
+ # if needed
+}
 
 configure_boot_flags
 configure_sendmail
@@ -174,3 +192,6 @@ setup_rust_rustup
 configure_boot_scripts
 setup_freya_home_directory
 setup_freyashell
+configure_tmpfs
+configure_fstab
+hardening_sysctl
