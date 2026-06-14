@@ -39,6 +39,8 @@ install_extra_packages() {
 
   cat /etc/pkg/FreeBSD.conf
   
+  freebsd-update fetch install
+
   pkg bootstrap -y
   
   sleep 1
@@ -47,7 +49,7 @@ install_extra_packages() {
   pkg upgrade 
 
   uname -a
-  
+
   pkg install sudo bash curl rsync openssl git
 }
 
