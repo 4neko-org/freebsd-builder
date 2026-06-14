@@ -173,8 +173,8 @@ configure_tmpfs(){
 
 configure_fstab() {
   cp /etc/fstab /tmp/fstab
-  sed '/\t\/\tufs\t/s/rw/ro/' /tmp/fstab > /etc/fstab
-  echo "tmpfs /home/$SECONDARY_USER/.ssh tmpfs rw,-m1777,-sram%5" >> /etc/fstab
+  sed '/ufs\t/s/rw/ro/' /tmp/fstab > /etc/fstab
+  echo -e "tmpfs\t/home/$SECONDARY_USER/.ssh\ttmpfs\trw,size=200m,mode=1777\t0\t0" >> /etc/fstab
 
   mkdir -p "/mnt/resources"
 }
