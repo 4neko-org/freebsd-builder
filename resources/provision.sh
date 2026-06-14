@@ -39,7 +39,8 @@ install_extra_packages() {
 
   cat /etc/pkg/FreeBSD.conf
   
-  env PAGER=cat freebsd-update fetch install
+  freebsd-update fetch --not-running-from-cron 
+  freebsd-update install --not-running-from-cron 
 
   pkg bootstrap -y
   
