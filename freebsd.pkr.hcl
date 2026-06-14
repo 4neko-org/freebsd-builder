@@ -166,7 +166,7 @@ source "qemu" "qemu" {
     ["-accel", "kvm"],
     ["-accel", "tcg"],
     ["-monitor", "none"],
-    ["-vga", "cirrus"],
+    ["-vga", "std"],
     ["-device", "virtio-blk-pci,drive=drive0,bootindex=0"],
     ["-device", "virtio-blk-pci,drive=drive1,bootindex=1"],
     ["-drive", "if=none,file={{ .OutputDir }}/{{ .Name }},id=drive0,cache=writeback,discard=ignore,format=qcow2"],
