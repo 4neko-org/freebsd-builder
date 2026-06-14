@@ -30,8 +30,6 @@ configure_sendmail() {
 }
 
 install_extra_packages() {
-  pkg bootstrap
-
   cat /etc/pkg/FreeBSD.conf
 
   mv /etc/pkg/FreeBSD.conf /etc/pkg/FreeBSD_temp.conf
@@ -40,8 +38,11 @@ install_extra_packages() {
   echo -n "quarterly -> latest"
 
   cat /etc/pkg/FreeBSD.conf
-
+  
+  pkg bootstrap -y
+  
   sleep 1
+  
   pkg update -f
   pkg upgrade 
   pkg install -y freebsd-update freebsd-kernel freebsd-world

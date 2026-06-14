@@ -9,7 +9,9 @@ else
   exit 1
 fi
 
-DISTRIBUTIONS='kernel.txz base.txz'
+PKGBASE=yes
+COMPONENTS='base'
+#DISTRIBUTIONS='kernel.txz base.txz'
 HOSTNAME=freebsd
 
 #!/bin/sh
