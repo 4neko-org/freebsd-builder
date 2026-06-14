@@ -45,8 +45,9 @@ install_extra_packages() {
   
   pkg update -f
   pkg upgrade 
-  pkg install -y freebsd-update freebsd-kernel freebsd-world
 
+  uname -a
+  
   pkg install sudo bash curl rsync openssl git
 }
 
