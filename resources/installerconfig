@@ -10,7 +10,7 @@ else
 fi
 
 PKGBASE=yes
-COMPONENTS='base, kernel'
+COMPONENTS='base kernel'
 #DISTRIBUTIONS='kernel.txz base.txz'
 HOSTNAME=freebsd
 
