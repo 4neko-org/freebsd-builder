@@ -39,7 +39,7 @@ install_extra_packages() {
 
   cat /etc/pkg/FreeBSD.conf
   
-  freebsd-update fetch install
+  env PAGER=cat freebsd-update fetch install
 
   pkg bootstrap -y
   
