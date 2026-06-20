@@ -39,8 +39,7 @@ install_extra_packages() {
 
   cat /etc/pkg/FreeBSD.conf
   
-  freebsd-update fetch --not-running-from-cron 
-  freebsd-update install --not-running-from-cron 
+  freebsd-update  --not-running-from-cron fetch install
 
   pkg bootstrap -y
   
