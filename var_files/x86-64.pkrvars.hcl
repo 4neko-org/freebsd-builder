@@ -1,4 +1,4 @@
-architecture = "x86-64"
+architecture = "x86_64"
 image_architecture = "amd64"
 qemu_architecture = "x86_64"
 pkg_site_architecture = "amd64"

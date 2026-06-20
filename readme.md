@@ -75,6 +75,7 @@ The following architectures and versions are supported:
 
 | Version | x86-64 | ARM64 |
 |---------|--------|-------|
+| 15.1    | ✓      | ✓     |
 | 15.0    | ✓      | ✓     |
 | 14.4    | ✓      | ✓     |
 
@@ -143,6 +144,7 @@ install location to `resources/ovmf.fd`.
 
 The above command will build the VM image and the resulting disk image will be
 at the path: `output/freebsd-15.0-x86-64.qcow2`.
+
 
 ## Additional Information
 
@@ -248,4 +250,3 @@ reboot
     -device virtio-blk-pci,drive=drive2,bootindex=2 \
     -drive if=none,file=/tmp/test1.qcow2,id=drive2,cache=unsafe,discard=ignore,format=qcow2
 ```
-
