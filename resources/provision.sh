@@ -53,6 +53,13 @@ install_extra_packages() {
   pkg install sudo bash curl rsync openssl git
 }
 
+configure_pre_login_message(){
+  sed '/(%h) (%t)/s/\\r\\n\\r\\n/ FREYABOOTREADY\\r\\n\\r\\n/' /etc/gettytab > /tmp/gettytab
+  rm /etc/gettytab
+  mv /tmp/gettytab /etc/gettytab
+}
+
+
 configure_sudo() {
   mkdir -p /usr/local/etc/sudoers.d
   cat <<EOF > "/usr/local/etc/sudoers.d/$SECONDARY_USER"
@@ -192,6 +199,7 @@ configure_boot_flags
 configure_sendmail
 install_extra_packages
 setup_secondary_user
+configure_pre_login_message
 configure_sudo
 setup_rust_rustup
 configure_boot_scripts
