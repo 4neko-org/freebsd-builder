@@ -115,9 +115,21 @@ mount_freya_disk() {
   fi
 }
 
+format_swap() {
+  disk="/dev/\$(sysctl -n kern.disks | grep -o 'vtbd3')"
+  
+  if [ -n "\$disk" ]; then
+    gpart destroy -F \$disk 
+    gpart create -s GPT \$disk 
+    gpart add -t freebsd-swap -l swap0 \$disk
+    swapon /dev/\${disk}p1
+  fi
+}
+
 mount_resources_disk
 install_authorized_keys
 mount_freya_disk
+format_swap
 EOF
 }
 
@@ -184,8 +196,9 @@ configure_tmpfs(){
 }
 
 configure_fstab() {
-  cp /etc/fstab /tmp/fstab
-  sed '/ufs\t/s/rw/ro/' /tmp/fstab > /etc/fstab
+  #cp /etc/fstab /tmp/fstab
+  sed -i '/ufs\t/s/rw/ro/' /etc/fstab
+  sed -i '/\/dev\/vtbd0p3/d' /etc/fstab
   echo -e "tmpfs\t/home/$SECONDARY_USER/.ssh\ttmpfs\trw,size=200m,mode=1777\t0\t0" >> /etc/fstab
 
   mkdir -p "/mnt/resources"
