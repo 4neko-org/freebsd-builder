@@ -197,7 +197,7 @@ configure_tmpfs(){
 
 configure_fstab() {
   #cp /etc/fstab /tmp/fstab
-  sed -i '/ufs\t/s/rw/ro/' /etc/fstab
+  sed -i '' '/ufs\t/s/rw/ro/' /etc/fstab
   sed -i '' '/\/dev\/vtbd0p3/d' /etc/fstab
   echo -e "tmpfs\t/home/$SECONDARY_USER/.ssh\ttmpfs\trw,size=200m,mode=1777\t0\t0" >> /etc/fstab
 
