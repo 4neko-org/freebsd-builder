@@ -81,7 +81,23 @@ setup_rust_rustup(){
 }
 
 configure_boot_scripts() {
-  cat <<EOF >> /etc/rc.conf
+  cat <<EOF > /usr/local/etc/rc.d/disks_prepare
+#! /bin/sh
+
+# PROVIDE: disks_prepare
+# REQUIRE: FILESYSTEMS
+# KEYWORD: 
+
+
+. /etc/rc.subr
+
+name="disks_prepare"
+start_cmd="\${name}_start"
+stop_cmd=":"
+
+load_rc_config \$name
+: \${disks_prepare_enable:=no}
+
 RESOURCES_MOUNT_PATH='/mnt/resources'
 
 mount_resources_disk() {
@@ -89,7 +105,7 @@ mount_resources_disk() {
   disk="/dev/\$(sysctl -n kern.disks | grep -o 'vtbd1')"
 
   if [ -n "\$disk" ]; then
-    mkdir -p "\$RESOURCES_MOUNT_PATH"
+    #mkdir -p "\$RESOURCES_MOUNT_PATH"
     mount_msdosfs "\$disk" "\$RESOURCES_MOUNT_PATH"
   fi
 }
@@ -122,15 +138,28 @@ format_swap() {
     gpart destroy -F \$disk 
     gpart create -s GPT \$disk 
     gpart add -t freebsd-swap -l swap0 \$disk
-    swapon /dev/\${disk}p1
+    swapon \${disk}p1
   fi
 }
 
-mount_resources_disk
-install_authorized_keys
-mount_freya_disk
-format_swap
+disks_prepare_start() 
+{
+	echo "Preparing disks"
+
+    mount_resources_disk
+    install_authorized_keys
+    mount_freya_disk
+    format_swap
+}
+
+load_rc_config \$name 
+run_rc_command "\$1"
+
 EOF
+
+chmod 744 /usr/local/etc/rc.d/disks_prepare
+
+echo 'disks_prepare_enable="YES"' >> /etc/rc.conf
 }
 
 setup_freya_home_directory() {
