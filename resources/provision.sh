@@ -200,7 +200,7 @@ setup_freyashell() {
   PATH=\"\$HOME/.cargo/bin:\$PATH\"
   
   cd /home/$SECONDARY_USER
-  git clone --branch v0.1.0 https://codeberg.org/4neko/freyashell.git
+  git clone --depth 1 --branch v0.1.7 https://codeberg.org/4neko/freyashell.git
   cd ./freyashell
   cargo build --release
   "
