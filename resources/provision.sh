@@ -102,9 +102,10 @@ RESOURCES_MOUNT_PATH='/mnt/resources'
 
 mount_resources_disk() {
   # get the last disk
-  disk="/dev/\$(sysctl -n kern.disks | grep -o 'vtbd1')"
+  disk="\$(sysctl -n kern.disks | grep -o 'vtbd1')"
 
   if [ -n "\$disk" ]; then
+    disk="/dev/\$disk"
     #mkdir -p "\$RESOURCES_MOUNT_PATH"
     mount_msdosfs "\$disk" "\$RESOURCES_MOUNT_PATH"
   fi
@@ -122,19 +123,22 @@ install_authorized_keys() {
 }
 
 mount_freya_disk() {
-  disk="/dev/\$(sysctl -n kern.disks | grep -o 'vtbd2')"
+  disk="\$(sysctl -n kern.disks | grep -o 'vtbd2')"
 
   if [ -n "\$disk" ]; then
+    disk="/dev/\$disk"
     newfs -U -L storage "\${disk}"
     mount "\${disk}a" "/home/$SECONDARY_USER/storage"
+    cp -r /home/$SECONDARY_USER/.cargo /home/$SECONDARY_USER/storage/.cargo
     chown "$SECONDARY_USER:$SECONDARY_USER" "/home/$SECONDARY_USER/storage"
   fi
 }
 
 format_swap() {
-  disk="/dev/\$(sysctl -n kern.disks | grep -o 'vtbd3')"
+  disk="\$(sysctl -n kern.disks | grep -o 'vtbd3')"
   
   if [ -n "\$disk" ]; then
+    disk="/dev/\$disk"
     gpart destroy -F \$disk 
     gpart create -s GPT \$disk 
     gpart add -t freebsd-swap -l swap0 \$disk
@@ -173,12 +177,16 @@ setup_freya_home_directory() {
   chown "$permissions" "$work_directory/.ssh"
 
   cat <<EOF >> $work_directory/env.toml
+[[envs]]
+key = "CARGO_HOME"
+value = "/home/$SECONDARY_USER/storage/.cargo"
+
 # if system supports RUSTUP, then a path to the rustup binary dir
 # should be set. It uses the same path to access cargo and switch 
 # between channels.
 [[envs]]
 key = "FREYA_RUSTUP_DIR_PATH"
-value = "\${HOMEDIR}/.cargo/bin"
+value = "\${CARGO_HOME}/bin"
 
 [[envs]]
 key = "PATH"
@@ -200,7 +208,7 @@ setup_freyashell() {
   PATH=\"\$HOME/.cargo/bin:\$PATH\"
   
   cd /home/$SECONDARY_USER
-  git clone --depth 1 --branch v0.1.7 https://codeberg.org/4neko/freyashell.git
+  git clone --depth 1 --branch v0.1.8 https://codeberg.org/4neko/freyashell.git
   cd ./freyashell
   cargo build --release
   "
