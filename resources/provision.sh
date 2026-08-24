@@ -78,6 +78,7 @@ setup_rust_rustup(){
   
   su $SECONDARY_USER -c "PATH=\"\$HOME/.cargo/bin:\$PATH\" rustup toolchain install nightly"
   su $SECONDARY_USER -c "PATH=\"\$HOME/.cargo/bin:\$PATH\" rustup toolchain install beta"
+  su $SECONDARY_USER -c "PATH=\"\$HOME/.cargo/bin:\$PATH\" rustup component add rust-analyzer"
 }
 
 configure_boot_scripts() {
