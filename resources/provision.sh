@@ -55,7 +55,7 @@ install_extra_packages() {
 
 configure_pre_login_message(){
 # based on the https://jpmens.net/2019/12/18/ip-address-of-machine-on-console/
-cat <<EOF >
+cat <<EOF > /etc/ifcfg.sh
 #!/bin/sh
 
 iface=vtnet0
@@ -67,6 +67,8 @@ iface=vtnet0
         /inet / { print "FREYA>IP4>" \$2;}
         /inet6/ {  if ( \$2 !~ /^fe80/ ) { print "FREYA>IP6>" \$2; } }'
 EOF
+
+chmod 744 /etc/ifcfg.sh
 
 # FREYAREADY MESSAGE (report that boot has completed)
   sed -i '' '/(%h) (%t)/s/\\r\\n\\r\\n/ FREYABOOTREADY\\r\\n\\r\\n/' /etc/gettytab
