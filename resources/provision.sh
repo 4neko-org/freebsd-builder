@@ -74,7 +74,7 @@ chmod 744 /etc/ifcfg.sh
   sed -i '' '/(%h) (%t)/s/\\r\\n\\r\\n/ FREYABOOTREADY\\r\\n\\r\\n/' /etc/gettytab
 
 # Report the IP address i.e FREYA>IP4>10.0.2.15\nFREYA>IP6>...
-  sed -i '' '/if=\/etc\/issue:/s/if=\/etc\/issue:/if=\/etc\/issue:\\\n\t:iM=\/etc\/ifcfg.sh:/' / /etc/gettytab
+  sed -i '' '/if=\/etc\/issue:/s/if=\/etc\/issue:/if=\/etc\/issue:\\\n\t:iM=\/etc\/ifcfg.sh:/' /etc/gettytab
 }
 
 
