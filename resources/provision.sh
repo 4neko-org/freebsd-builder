@@ -232,14 +232,14 @@ setup_freyashell() {
   
   cd /home/$SECONDARY_USER
   git clone --depth 1 --branch v0.1.20 https://codeberg.org/4neko/freya.git
-  cd ./freyashell
+  cd ./freya
   cargo build --bin freyashell --release
   "
 
   mkdir -p /usr/local/bin
-  cp /home/$SECONDARY_USER/freyashell/target/release/freyashell /usr/local/bin/freyashell
+  cp /home/$SECONDARY_USER/freya/target/release/freyashell /usr/local/bin/freyashell
 
-  rm -rf /home/$SECONDARY_USER/freyashell
+  rm -rf /home/$SECONDARY_USER/freya
 
   # set the shell
   echo "/usr/local/bin/freyashell" >> /etc/shells
