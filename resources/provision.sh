@@ -54,9 +54,25 @@ install_extra_packages() {
 }
 
 configure_pre_login_message(){
-  sed '/(%h) (%t)/s/\\r\\n\\r\\n/ FREYABOOTREADY\\r\\n\\r\\n/' /etc/gettytab > /tmp/gettytab
-  rm /etc/gettytab
-  mv /tmp/gettytab /etc/gettytab
+# based on the https://jpmens.net/2019/12/18/ip-address-of-machine-on-console/
+cat <<EOF >
+#!/bin/sh
+
+iface=vtnet0
+
+#echo "********* \$(date) ******* BLA" > /tmp/ifcfg.banner
+
+/sbin/ifconfig \$iface |
+    awk 'BEGIN { getline ; IFACE = \$1; }
+        /inet / { print "FREYA>IP4>" \$2;}
+        /inet6/ {  if ( \$2 !~ /^fe80/ ) { print "FREYA>IP6>" \$2; } }'
+EOF
+
+# FREYAREADY MESSAGE (report that boot has completed)
+  sed -i '' '/(%h) (%t)/s/\\r\\n\\r\\n/ FREYABOOTREADY\\r\\n\\r\\n/' /etc/gettytab
+
+# Report the IP address i.e FREYA>IP4>10.0.2.15\nFREYA>IP6>...
+  sed -i '' '/if=\/etc\/issue:/s/if=\/etc\/issue:/if=\/etc\/issue:\\\n\t:iM=\/etc\/ifcfg.sh:/' / /etc/gettytab
 }
 
 
@@ -188,6 +204,10 @@ value = "/home/$SECONDARY_USER/storage/.cargo"
 [[envs]]
 key = "FREYA_RUSTUP_DIR_PATH"
 value = "\${CARGO_HOME}/bin"
+
+[[envs]]
+key = "CARGO_INSTALL_ROOT"
+value = "\${HOMEDIR}/.cargo"
 
 [[envs]]
 key = "PATH"
