@@ -66,12 +66,18 @@ iface=vtnet0
     awk 'BEGIN { getline ; IFACE = \$1; }
         /inet / { print "FREYA>IP4>" \$2;}
         /inet6/ {  if ( \$2 !~ /^fe80/ ) { print "FREYA>IP6>" \$2; } }'
+
+rustc_v=\$(su freya -c "/home/freya/.cargo/bin/rustc -V | cut -w -f2")
+rusta_v=\$(su freya -c "/home/freya/.cargo/bin/rust-analyzer -V")
+echo "FREYA>RUSTC>\${rustc_v}"
+echo "FREYA>RUSTANALYZER>\${rusta_v}"
+echo "FREYABOOTREADY"
 EOF
 
 chmod 744 /etc/ifcfg.sh
 
 # FREYAREADY MESSAGE (report that boot has completed)
-  sed -i '' '/(%h) (%t)/s/\\r\\n\\r\\n/ FREYABOOTREADY\\r\\n\\r\\n/' /etc/gettytab
+ # sed -i '' '/(%h) (%t)/s/\\r\\n\\r\\n/ FREYABOOTREADY\\r\\n\\r\\n/' /etc/gettytab
 
 # Report the IP address i.e FREYA>IP4>10.0.2.15\nFREYA>IP6>...
   sed -i '' '/if=\/etc\/issue:/s/if=\/etc\/issue:/if=\/etc\/issue:\\\n\t:iM=\/etc\/ifcfg.sh:/' /etc/gettytab
