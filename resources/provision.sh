@@ -62,6 +62,8 @@ iface=vtnet0
 
 #echo "********* \$(date) ******* BLA" > /tmp/ifcfg.banner
 
+echo "FREYABOOTREADY"
+
 /sbin/ifconfig \$iface |
     awk 'BEGIN { getline ; IFACE = \$1; }
         /inet / { print "FREYA>IP4>" \$2;}
@@ -71,7 +73,6 @@ rustc_v=\$(su freya -c "/home/freya/.cargo/bin/rustc -V | cut -w -f2")
 rusta_v=\$(su freya -c "/home/freya/.cargo/bin/rust-analyzer -V")
 echo "FREYA>RUSTC>\${rustc_v}"
 echo "FREYA>RUSTANALYZER>\${rusta_v}"
-echo "FREYABOOTREADY"
 EOF
 
 chmod 744 /etc/ifcfg.sh
