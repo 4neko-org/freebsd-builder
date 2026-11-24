@@ -67,9 +67,13 @@ iface=vtnet0
         /inet / { print "FREYA>IP4>" \$2;}
         /inet6/ {  if ( \$2 !~ /^fe80/ ) { print "FREYA>IP6>" \$2; } }'
 
-rustc_v=\$(su freya -c "/home/freya/.cargo/bin/rustc -V | cut -w -f2")
-rusta_v=\$(su freya -c "/home/freya/.cargo/bin/rust-analyzer -V | cut -w -f2-")
+rustc_v=\$(su $SECONDARY_USER -c "/home/$SECONDARY_USER/.cargo/bin/rustc -V | cut -w -f2")
+rustcb_v=\$(su $SECONDARY_USER -c "/home/$SECONDARY_USER/.cargo/bin/rustc +beta --version" | cut -w -f2)
+rustcn_v=\$(su $SECONDARY_USER -c "/home/$SECONDARY_USER/.cargo/bin/rustc +nightly --version" | cut -w -f2)
+rusta_v=\$(su $SECONDARY_USER -c "/home/$SECONDARY_USER/.cargo/bin/rust-analyzer -V | cut -w -f2-")
 echo "FREYA>RUSTC>\${rustc_v}"
+echo "FREYA>RUSTC>\${rustcb_v}"
+echo "FREYA>RUSTC>\${rustcn_v}"
 echo "FREYA>RUSTANALYZER>\${rusta_v}"
 echo "FREYA>BOOTREADY"
 
